@@ -5,9 +5,14 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var expressLayouts = require('express-ejs-layouts');
+var session = require('express-session') // around line 7
+var flash = require('express-flash-messages') // around line 8
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var stocksRouter = require('./routes/stocks')
+
+var SESSION_SECRET = process.env.SESSION_SECRET || "super secret"
 
 var app = express();
 
@@ -22,8 +27,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+  cookie: { maxAge: 60000},
+  secret: SESSION_SECRET,
+  name: 'stocks-app-session',
+  resave: true,
+  saveUninitialized: true
+}));
+app.use(flash())
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/stocks', stocksRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
